@@ -11,7 +11,7 @@ ADD . /appnodejs
 RUN npm install
 
 # Exponemos el puerto 3000 para poder acceder a la app desde fuera del contenedor
-EXPOSE 3000
+EXPOSE 3001
 
 # Definimos el comando que se ejecutará cuando el contenedor inicie
 CMD ["npm", "start"]

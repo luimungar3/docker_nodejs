@@ -1,20 +1,17 @@
 var express = require('express');
 var app = express();
-var path = require('path');  // Para gestionar rutas de archivos
+
+app.get('/', function (req, res) {
+  res.send('Hello World! Hola Mundo!');
+});
 
 var tareas = ['Tarea 1', 'Tarea 2', 'Tarea 3'];
 
-// Servir el archivo HTML cuando alguien accede a la raíz
-app.get('/', function (req, res) {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// Ruta GET para obtener la lista de tareas
 app.get('/tareas', function (req, res) {
   res.json(tareas);
 });
 
-// Ruta POST para agregar una tarea
+// Ruta para agregar una tarea
 app.post('/tareas', express.json(), function (req, res) {
   const tarea = req.body.tarea;
   if (tarea) {
@@ -25,8 +22,8 @@ app.post('/tareas', express.json(), function (req, res) {
   }
 });
 
-// Iniciar el servidor
-var server = app.listen(3000, function () {
+// Aquí aseguramos que la app escuche en 0.0.0.0 para que sea accesible desde fuera del contenedor
+var server = app.listen(3000, '0.0.0.0', function () {
   var host = server.address().address;
   var port = server.address().port;
 

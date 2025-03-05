@@ -23,7 +23,7 @@ app.post('/tareas', express.json(), function (req, res) {
 });
 
 // Aquí aseguramos que la app escuche en 0.0.0.0 para que sea accesible desde fuera del contenedor
-var server = app.listen(3000, '0.0.0.0', function () {
+var server = app.listen(3001, '0.0.0.0', function () {
   var host = server.address().address;
   var port = server.address().port;
 

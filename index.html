@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lista de Tareas</title>
+</head>
+<body>
+  <h1>Agregar una nueva tarea</h1>
+  <form id="taskForm">
+    <label for="tarea">Descripción de la tarea:</label>
+    <input type="text" id="tarea" name="tarea" required>
+    <button type="submit">Agregar tarea</button>
+  </form>
+
+  <h2>Tareas actuales</h2>
+  <ul id="taskList"></ul>
+
+  <script>
+    // Al cargar la página, obtenemos las tareas actuales
+    window.onload = function() {
+      fetch('/tareas')
+        .then(response => response.json())
+        .then(data => {
+          const taskList = document.getElementById('taskList');
+          data.forEach(tarea => {
+            const li = document.createElement('li');
+            li.textContent = tarea;
+            taskList.appendChild(li);
+          });
+        });
+    };
+
+    // Enviar la nueva tarea al servidor cuando el formulario sea enviado
+    const form = document.getElementById('taskForm');
+    form.onsubmit = function(event) {
+      event.preventDefault();  // Evitar que se recargue la página
+      const tarea = document.getElementById('tarea').value;
+
+      // Enviar la nueva tarea usando una petición POST
+      fetch('/tareas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ tarea: tarea })
+      })
+      .then(response => response.text())
+      .then(message => {
+        alert(message);  // Mostrar un mensaje de confirmación
+        location.reload();  // Recargar la página para ver la lista de tareas actualizada
+      });
+    };
+  </script>
+</body>
+</html>

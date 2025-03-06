@@ -3,7 +3,7 @@ var os = require('os');
 var path = require('path');
 var app = express();
 
-// Servir archivos estáticos (para el index.html)
+// Servir archivos estáticos
 app.use(express.static(path.join(__dirname)));
 
 // Ruta para mostrar el HTML
@@ -24,6 +24,7 @@ app.get('/info', function (req, res) {
             }
         }
     }
+    
     res.json({
         system: os.type(),
         version: os.release(),
@@ -37,11 +38,12 @@ app.get('/info', function (req, res) {
         ipAddress: ipAddress
     });
 });
-    app.get('/shutdown', function (req, res) {
-        res.send('El servidor se está apagando...');
-        setTimeout(() => process.exit(0), 3000);
-    });
-    document.getElementById("reload").addEventListener("click", loadSystemInfo);
+
+// Ruta para apagar el servidor (Usar POST en vez de GET)
+app.post('/shutdown', function (req, res) {
+    res.send('El servidor se está apagando...');
+    setTimeout(() => process.exit(0), 3000);
+});
 
 // Iniciar el servidor en el puerto 3001
 app.listen(3001, '0.0.0.0', function () {

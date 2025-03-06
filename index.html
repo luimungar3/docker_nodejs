@@ -60,6 +60,35 @@
 
         loadSystemInfo();
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<canvas id="cpuChart" width="400" height="200"></canvas>
+<script>
+        async function updateChart() {
+        const response = await fetch('/info');
+        const data = await response.json();
+    
+        cpuChart.data.datasets[0].data = [data.cpus, data.freeMemory, data.totalMemory];
+        cpuChart.update();
+        }
+    
+        const ctx = document.getElementById('cpuChart').getContext('2d');
+        const cpuChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['CPUs', 'Memoria Libre (MB)', 'Memoria Total (MB)'],
+                datasets: [{
+                    label: 'Estado del sistema',
+                    data: [],
+                    backgroundColor: ['#ffcc00', '#ff4444', '#44ff44']
+                }]
+            },
+            options: {
+                responsive: true
+            }
+        });
+    
+        setInterval(updateChart, 3000); 
+    </script>
 
 </body>
 </html>

@@ -1,6 +1,7 @@
 var express = require('express');
 var os = require('os');
 var path = require('path');
+var { exec } = require('child_process'); // Importamos exec para ejecutar comandos de shell
 var app = express();
 
 // Servir archivos estáticos
@@ -36,6 +37,24 @@ app.get('/info', function (req, res) {
         uptime: os.uptime() + " segundos",
         homeDirectory: os.homedir(),
         ipAddress: ipAddress
+    });
+});
+
+// Ruta para obtener información de los contenedores
+app.get('/containers', function (req, res) {
+    exec('docker ps --format "{{.ID}} {{.Names}} {{.Image}} {{.Status}}"', (err, stdout, stderr) => {
+        if (err) {
+            console.error('Error al obtener contenedores:', err);
+            return res.status(500).json({ error: 'Error al obtener contenedores' });
+        }
+
+        // Dividimos la salida del comando en líneas para obtener cada contenedor
+        const containers = stdout.split('\n').filter(line => line).map(line => {
+            const [id, name, image, status] = line.split(' ');
+            return { id, name, image, status };
+        });
+
+        res.json(containers); // Devolver contenedores en formato JSON
     });
 });
 

@@ -63,16 +63,16 @@ app.use(express.json());
 
 // Endpoint para obtener el estado del contenedor
 app.get('/container-status', (req, res) => {
-    exec("docker ps --filter 'name=app_monitoreo' --format '{{.State}}'", (err, stdout, stderr) => {
+    exec("docker inspect -f '{{.State.Status}}' app_monitoreo", (err, stdout, stderr) => {
         if (err || stderr) {
             console.error('Error al obtener estado del contenedor:', err || stderr);
-            return res.status(500).json({ status: "error" });
+            return res.status(500).json({ status: "error", message: err?.message || stderr });
         }
 
         const status = stdout.trim();
         res.json({ status });
+        });
     });
-});
 
 // Ruta para controlar contenedores
 app.post('/control-container/:id/:action', async (req, res) => {

@@ -59,7 +59,7 @@
         <h2>Estado del Contenedor</h2>
         <p id="containerStatus">Cargando...</p>
     </div>
-
+    <div id="containerStatus"></div>
     <canvas id="memoryChart" width="400" height="200"></canvas>
 
     <button class="back-btn" onclick="window.location.href='index.html'">Volver a Información del Sistema</button>
@@ -154,13 +154,18 @@
         containerStatusDiv.innerHTML = ""; // Limpiar contenido previo
 
         data.containers.forEach(container => {
-            const statusElement = document.createElement("p");
-            statusElement.innerHTML = `<strong>${container.Names}:</strong> ${container.Status}`;
-            containerStatusDiv.appendChild(statusElement);
+            const estado = container.State === "running" ? "🟢 Activo" : "🔴 Inactivo";
+            const contenedorHTML = `
+                <div>
+                    <strong>${container.Names}:</strong> ${estado} - ${container.Status}
+                </div>
+            `;
+            containerStatusDiv.innerHTML += contenedorHTML;
         });
     }
 
-         setInterval(actualizarEstadoContenedores, 5000);
+    // Actualiza cada 5 segundos
+        setInterval(actualizarEstadoContenedores, 5000);
         actualizarEstadoContenedores();
         setInterval(updateMemoryChart, 3000);
         setInterval(updateContainerStatus, 5000);

@@ -13,15 +13,32 @@ app.get('/', function (req, res) {
 
 // Ruta para obtener información del sistema
 app.get('/info', function (req, res) {
+    const networkInterfaces = os.networkInterfaces();
+    let ipAddress = 'No disponible';
+
+    for (const iface of Object.values(networkInterfaces)) {
+        for (const entry of iface) {
+            if (entry.family === 'IPv4' && !entry.internal) {
+                ipAddress = entry.address;
+                break;
+            }
+        }
+    }
+
     res.json({
         system: os.type(),
+        version: os.release(),
         architecture: os.arch(),
         cpus: os.cpus().length,
-        freeMemory: (os.freemem() / 1024 / 1024).toFixed(2), // Convertir a MB
-        totalMemory: (os.totalmem() / 1024 / 1024).toFixed(2), // Convertir a MB
-        uptime: os.uptime() // Tiempo en segundos
+        hostname: os.hostname(),
+        freeMemory: (os.freemem() / 1024 / 1024).toFixed(2) + " MB",
+        totalMemory: (os.totalmem() / 1024 / 1024).toFixed(2) + " MB",
+        uptime: os.uptime() + " segundos",
+        homeDirectory: os.homedir(),
+        ipAddress: ipAddress
     });
 });
+
 
 // Iniciar el servidor en el puerto 3001
 app.listen(3001, '0.0.0.0', function () {

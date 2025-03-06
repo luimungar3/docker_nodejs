@@ -24,7 +24,6 @@ app.get('/info', function (req, res) {
             }
         }
     }
-
     res.json({
         system: os.type(),
         version: os.release(),
@@ -38,7 +37,7 @@ app.get('/info', function (req, res) {
         ipAddress: ipAddress
     });
 });
-
+document.getElementById("reload").addEventListener("click", loadSystemInfo);
 
 // Iniciar el servidor en el puerto 3001
 app.listen(3001, '0.0.0.0', function () {

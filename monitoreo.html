@@ -40,6 +40,10 @@
         .restart-btn { background-color: #ffa500; color: white; }
         .back-btn { background-color: #007bff; color: white; }
         button:hover { opacity: 0.8; }
+        canvas {
+            max-width: 400px;
+            margin: 20px auto;
+        }
     </style>
 </head>
 <body>
@@ -56,14 +60,15 @@
         <p id="containerStatusList">Cargando...</p>
     </div>
     <div id="containerStatus"></div>
+    <canvas id="memoryChart" width="400" height="200"></canvas>
 
     <button class="back-btn" onclick="window.location.href='index.html'">Volver a Información del Sistema</button>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         async function loadContainerInfo() {
             const response = await fetch('/containers');
             const data = await response.json();
-            console.log(data);  // Verifica los datos recibidos aquí
             const containerListDiv = document.getElementById('container-list');
             containerListDiv.innerHTML = '';
 
@@ -111,11 +116,36 @@
             }
         }
 
-        async function actualizarEstadoContenedores() {
+        const ctx = document.getElementById('memoryChart').getContext('2d');
+        const memoryChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Memoria Libre (MB)', 'Memoria Total (MB)'],
+                datasets: [{
+                    label: 'Estado de Memoria',
+                    data: [],
+                    backgroundColor: ['#44ff44', '#ff4444'],
+                    borderColor: ['#44cc44', '#cc4444'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true
+            }
+        });
+
+        async function updateMemoryChart() {
+            const response = await fetch('/info');
+            const data = await response.json();
+            memoryChart.data.datasets[0].data = [data.freeMemory, data.totalMemory];
+            memoryChart.update();
+        }
+       
+       async function actualizarEstadoContenedores() {
             const response = await fetch('/container-status');
             const data = await response.json();
         
-            console.log("Datos recibidos:", data); // Verifica los datos recibidos en la consola
+            console.log("Datos recibidos:", data); // Agrega esto para ver la respuesta en la consola
         
             const containerStatusDiv = document.getElementById('containerStatusList');
             containerStatusDiv.innerHTML = ""; // Limpiar contenido previo
@@ -135,9 +165,10 @@
             });
         }
 
-        // Actualiza cada 5 segundos
+    // Actualiza cada 5 segundos
         setInterval(actualizarEstadoContenedores, 5000);
         actualizarEstadoContenedores();
+        setInterval(updateMemoryChart, 3000);
         setInterval(updateContainerStatus, 5000);
         loadContainerInfo();
         updateContainerStatus();

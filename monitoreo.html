@@ -60,8 +60,6 @@
         <p id="containerStatusList">Cargando...</p>
     </div>
     <div id="containerStatus"></div>
-    <canvas id="memoryChart" width="400" height="200"></canvas>
-
     <button class="back-btn" onclick="window.location.href='index.html'">Volver a Información del Sistema</button>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -116,30 +114,6 @@
             }
         }
 
-        const ctx = document.getElementById('memoryChart').getContext('2d');
-        const memoryChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Memoria Libre (MB)', 'Memoria Total (MB)'],
-                datasets: [{
-                    label: 'Estado de Memoria',
-                    data: [],
-                    backgroundColor: ['#44ff44', '#ff4444'],
-                    borderColor: ['#44cc44', '#cc4444'],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true
-            }
-        });
-
-        async function updateMemoryChart() {
-            const response = await fetch('/info');
-            const data = await response.json();
-            memoryChart.data.datasets[0].data = [data.freeMemory, data.totalMemory];
-            memoryChart.update();
-        }
        
        async function actualizarEstadoContenedores() {
             const response = await fetch('/container-status');

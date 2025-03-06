@@ -60,7 +60,7 @@
         <p id="containerStatusList">Cargando...</p>
     </div>
     <div id="containerStatus"></div>
-    <canvas id="memoryChart" width="400" height="200"></canvas>
+   
 
     <button class="back-btn" onclick="window.location.href='index.html'">Volver a Información del Sistema</button>
 
@@ -117,13 +117,7 @@
         }
 
        
-        async function updateMemoryChart() {
-            const response = await fetch('/info');
-            const data = await response.json();
-            memoryChart.data.datasets[0].data = [data.freeMemory, data.totalMemory];
-            memoryChart.update();
-        }
-       
+  
        async function actualizarEstadoContenedores() {
             const response = await fetch('/container-status');
             const data = await response.json();

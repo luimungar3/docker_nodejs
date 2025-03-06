@@ -140,7 +140,28 @@
             memoryChart.data.datasets[0].data = [data.freeMemory, data.totalMemory];
             memoryChart.update();
         }
+       
+        async function actualizarEstadoContenedores() {
+        const response = await fetch('/container-status');
+        const data = await response.json();
+        const containerStatusDiv = document.getElementById('containerStatus');
 
+        if (data.status === "error") {
+            containerStatusDiv.innerHTML = `⚠️ Error: ${data.message}`;
+            return;
+        }
+
+        containerStatusDiv.innerHTML = ""; // Limpiar contenido previo
+
+        data.containers.forEach(container => {
+            const statusElement = document.createElement("p");
+            statusElement.innerHTML = `<strong>${container.Names}:</strong> ${container.Status}`;
+            containerStatusDiv.appendChild(statusElement);
+        });
+    }
+
+         setInterval(actualizarEstadoContenedores, 5000);
+        actualizarEstadoContenedores();
         setInterval(updateMemoryChart, 3000);
         setInterval(updateContainerStatus, 5000);
         loadContainerInfo();

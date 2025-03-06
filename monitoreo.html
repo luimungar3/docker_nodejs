@@ -57,7 +57,7 @@
 
     <div id="informacionContenedor">
         <h2>Estado del Contenedor</h2>
-        <p id="containerStatus">Cargando...</p>
+        <p id="containerStatusList">Cargando...</p>
     </div>
     <div id="containerStatus"></div>
     <canvas id="memoryChart" width="400" height="200"></canvas>
@@ -141,28 +141,29 @@
             memoryChart.update();
         }
        
-        async function actualizarEstadoContenedores() {
-        const response = await fetch('/container-status');
-        const data = await response.json();
-        const containerStatusDiv = document.getElementById('containerStatus');
-
-        if (data.status === "error") {
-            containerStatusDiv.innerHTML = `⚠️ Error: ${data.message}`;
-            return;
+       async function actualizarEstadoContenedores() {
+            const response = await fetch('/container-status');
+            const data = await response.json();
+        
+            console.log("Datos recibidos:", data); // Agrega esto para ver la respuesta en la consola
+        
+            const containerStatusDiv = document.getElementById('containerStatusList');
+            containerStatusDiv.innerHTML = ""; // Limpiar contenido previo
+        
+            if (data.status === "error") {
+                containerStatusDiv.innerHTML = `⚠️ Error: ${data.message}`;
+                return;
+            }
+        
+            data.containers.forEach(container => {
+                const estado = container.State === "running" ? "🟢 Activo" : "🔴 Inactivo";
+                containerStatusDiv.innerHTML += `
+                    <div>
+                        <strong>${container.Names}:</strong> ${estado} - ${container.Status}
+                    </div>
+                `;
+            });
         }
-
-        containerStatusDiv.innerHTML = ""; // Limpiar contenido previo
-
-        data.containers.forEach(container => {
-            const estado = container.State === "running" ? "🟢 Activo" : "🔴 Inactivo";
-            const contenedorHTML = `
-                <div>
-                    <strong>${container.Names}:</strong> ${estado} - ${container.Status}
-                </div>
-            `;
-            containerStatusDiv.innerHTML += contenedorHTML;
-        });
-    }
 
     // Actualiza cada 5 segundos
         setInterval(actualizarEstadoContenedores, 5000);

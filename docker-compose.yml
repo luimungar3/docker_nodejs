@@ -1,0 +1,14 @@
+version: '3'
+services:
+  my_service:
+    image: miguel7834/nodejs2:a5bc684
+    container_name: app_monitoreo
+    privileged: true
+    user: root
+    volumes:
+      - $PWD/app_monitoreo:/var/app_monitoreo   # Monta el directorio local de tu proyecto
+      - /var/run/docker.sock:/var/run/docker.sock  # Monta el socket de Docker del host para usar Docker dentro del contenedor
+    ports:
+      - "3001:3001" 
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock   # Esto establece la variable de entorno para usar Docker en el contenedor

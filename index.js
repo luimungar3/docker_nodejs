@@ -37,7 +37,11 @@ app.get('/info', function (req, res) {
         ipAddress: ipAddress
     });
 });
-document.getElementById("reload").addEventListener("click", loadSystemInfo);
+    app.get('/shutdown', function (req, res) {
+        res.send('El servidor se está apagando...');
+        setTimeout(() => process.exit(0), 3000);
+    });
+    document.getElementById("reload").addEventListener("click", loadSystemInfo);
 
 // Iniciar el servidor en el puerto 3001
 app.listen(3001, '0.0.0.0', function () {

@@ -1,8 +1,11 @@
 var express = require('express');
 var os = require('os');
 var path = require('path');
-var { exec } = require('child_process'); // Importamos exec para ejecutar comandos de shell
+var docker = require('dockerode');
 var app = express();
+
+// Conexión a Docker
+var client = new docker();
 
 // Servir archivos estáticos
 app.use(express.static(path.join(__dirname)));
@@ -40,28 +43,37 @@ app.get('/info', function (req, res) {
     });
 });
 
-// Ruta para obtener información de los contenedores
-app.get('/containers', function (req, res) {
-    exec('docker ps --format "{{.ID}} {{.Names}} {{.Image}} {{.Status}}"', (err, stdout, stderr) => {
-        if (err) {
-            console.error('Error al obtener contenedores:', err);
-            return res.status(500).json({ error: 'Error al obtener contenedores' });
-        }
-
-        // Dividimos la salida del comando en líneas para obtener cada contenedor
-        const containers = stdout.split('\n').filter(line => line).map(line => {
-            const [id, name, image, status] = line.split(' ');
-            return { id, name, image, status };
-        });
-
-        res.json(containers); // Devolver contenedores en formato JSON
-    });
+// Ruta para obtener los contenedores
+app.get('/containers', async (req, res) => {
+    try {
+        const containers = await client.listContainers({ all: true });
+        const containerInfo = containers.map(container => ({
+            id: container.Id,
+            name: container.Names[0].substring(1), // Eliminar el prefijo '/'
+            status: container.State
+        }));
+        res.json({ containers: containerInfo });
+    } catch (err) {
+        res.status(500).send(err);
+    }
 });
 
-// Ruta para apagar el servidor (Usar POST en vez de GET)
-app.post('/shutdown', function (req, res) {
-    res.send('El servidor se está apagando...');
-    setTimeout(() => process.exit(0), 3000);
+// Ruta para controlar contenedores
+app.post('/control-container/:id/:action', async (req, res) => {
+    const { id, action } = req.params;
+    try {
+        const container = client.getContainer(id);
+        if (action === 'start') {
+            await container.start();
+        } else if (action === 'stop') {
+            await container.stop();
+        } else if (action === 'restart') {
+            await container.restart();
+        }
+        res.send('Acción ejecutada con éxito');
+    } catch (err) {
+        res.status(500).send(err);
+    }
 });
 
 // Iniciar el servidor en el puerto 3001

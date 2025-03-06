@@ -2,6 +2,7 @@ var express = require('express');
 var os = require('os');
 var path = require('path');
 var docker = require('dockerode');
+const { exec } = require('child_process');
 var app = express();
 
 // Conexión a Docker

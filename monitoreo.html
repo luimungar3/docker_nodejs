@@ -28,8 +28,18 @@
             border-bottom: 1px solid #ddd;
         }
         button {
+            padding: 10px 15px;
             margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
         }
+        .start-btn { background-color: #4CAF50; color: white; }
+        .stop-btn { background-color: #f44336; color: white; }
+        .restart-btn { background-color: #ffa500; color: white; }
+        .back-btn { background-color: #007bff; color: white; }
+        button:hover { opacity: 0.8; }
         canvas {
             max-width: 400px;
             margin: 20px auto;
@@ -44,6 +54,7 @@
         <h2>Contenedores Actuales:</h2>
         <div id="container-list"></div>
     </div>
+
     <div id="informacionContenedor">
         <h2>Estado del Contenedor</h2>
         <p id="containerStatus">Cargando...</p>
@@ -51,7 +62,7 @@
 
     <canvas id="memoryChart" width="400" height="200"></canvas>
 
-    <button onclick="window.location.href='index.html'">Volver a Información del Sistema</button>
+    <button class="back-btn" onclick="window.location.href='index.html'">Volver a Información del Sistema</button>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -66,9 +77,9 @@
                 containerDiv.classList.add('container-item');
                 containerDiv.innerHTML = `
                     <strong>Contenedor: ${container.name}</strong><br>
-                    <button onclick="controlContainer('${container.id}', 'start')">Iniciar</button>
-                    <button onclick="controlContainer('${container.id}', 'stop')">Detener</button>
-                    <button onclick="controlContainer('${container.id}', 'restart')">Reiniciar</button>
+                    <button class="start-btn" onclick="controlContainer('${container.id}', 'start')">Iniciar</button>
+                    <button class="stop-btn" onclick="controlContainer('${container.id}', 'stop')">Detener</button>
+                    <button class="restart-btn" onclick="controlContainer('${container.id}', 'restart')">Reiniciar</button>
                 `;
                 containerListDiv.appendChild(containerDiv);
             });
@@ -78,7 +89,30 @@
             const response = await fetch(`/control-container/${id}/${action}`, { method: 'POST' });
             if (response.ok) {
                 alert(`Acción ${action} ejecutada para el contenedor ${id}`);
-                loadContainerInfo(); // Recargar la información después de ejecutar la acción
+                loadContainerInfo();
+                updateContainerStatus();
+            }
+        }
+
+        async function updateContainerStatus() {
+            try {
+                const response = await fetch('/container-status');
+                const data = await response.json();
+                const statusElement = document.getElementById('containerStatus');
+
+                if (data.status === "running") {
+                    statusElement.innerHTML = "✅ En ejecución";
+                    statusElement.style.color = "green";
+                } else if (data.status === "stopped") {
+                    statusElement.innerHTML = "⛔ Detenido";
+                    statusElement.style.color = "red";
+                } else {
+                    statusElement.innerHTML = "⚠️ Desconocido";
+                    statusElement.style.color = "gray";
+                }
+            } catch (error) {
+                console.error("Error al obtener el estado del contenedor:", error);
+                document.getElementById('containerStatus').innerHTML = "⚠️ Error al obtener el estado";
             }
         }
 
@@ -108,7 +142,9 @@
         }
 
         setInterval(updateMemoryChart, 3000);
+        setInterval(updateContainerStatus, 5000);
         loadContainerInfo();
+        updateContainerStatus();
     </script>
 
 </body>

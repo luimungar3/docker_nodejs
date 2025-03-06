@@ -16,7 +16,7 @@
         }
         #info {
             background: white;
-            max-width: 600px;
+            max-width: 500px;
             margin: 20px auto;
             padding: 20px;
             border-radius: 8px;
@@ -27,38 +27,42 @@
             padding: 10px;
             border-bottom: 1px solid #ddd;
         }
-        button {
-            margin-top: 20px;
+        #container-monitor {
+            display: none;
+        }
+        .btn {
             padding: 10px 20px;
-            background-color: #4CAF50;
+            margin: 10px;
+            background-color: #007bff;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
         }
-        button:hover {
-            background-color: #45a049;
-        }
-        canvas {
-            max-width: 400px;
-            width: 100%;
-            height: 150px;
-            margin: 20px auto;
+        .btn:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
 
     <h1>Información del Sistema</h1>
-    
+
+    <!-- Botones de navegación -->
+    <button class="btn" onclick="showSystemInfo()">Ver Información del Sistema</button>
+    <button class="btn" onclick="showContainerMonitor()">Ver Monitoreo de Contenedores</button>
+
+    <!-- Contenedor de Información del Sistema -->
     <div id="info">
         <h2>Detalles:</h2>
         <div id="system-info"></div>
     </div>
 
-    <canvas id="cpuChart"></canvas>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Contenedor de Monitoreo de Contenedores (Oculto por defecto) -->
+    <div id="container-monitor">
+        <h2>Monitoreo de Contenedores</h2>
+        <div id="containers"></div>
+    </div>
 
     <script>
         async function loadSystemInfo() {
@@ -69,9 +73,10 @@
             infoDiv.innerHTML = `
                 <div class="info-item"><strong>Nombre del Sistema:</strong> ${data.system}</div>
                 <div class="info-item"><strong>Arquitectura:</strong> ${data.architecture}</div>
-                <div class="info-item"><strong>Memoria Libre:</strong> ${data.freeMemory}</div>
-                <div class="info-item"><strong>Memoria Total:</strong> ${data.totalMemory}</div>
-                <div class="info-item"><strong>Tiempo de Actividad:</strong> ${data.uptime}</div>
+                <div class="info-item"><strong>CPUs:</strong> ${data.cpus}</div>
+                <div class="info-item"><strong>Memoria Libre:</strong> ${data.freeMemory} MB</div>
+                <div class="info-item"><strong>Memoria Total:</strong> ${data.totalMemory} MB</div>
+                <div class="info-item"><strong>Tiempo de Actividad:</strong> ${data.uptime} segundos</div>
                 <div class="info-item"><strong>Versión del SO:</strong> ${data.version}</div>
                 <div class="info-item"><strong>Nombre del Host:</strong> ${data.hostname}</div>
                 <div class="info-item"><strong>Dirección IP:</strong> ${data.ipAddress}</div>
@@ -79,50 +84,45 @@
             `;
         }
 
-        async function updateChart() {
-            const response = await fetch('/info');
-            const data = await response.json();
+        async function loadContainers() {
+            const response = await fetch('/containers');
+            const containers = await response.json();
+            const containersDiv = document.getElementById('containers');
 
-            const freeMemory = parseFloat(data.freeMemory); // Convertir a número
-            const totalMemory = parseFloat(data.totalMemory);
-            const usedMemory = totalMemory - freeMemory; // Calcular memoria usada
+            containersDiv.innerHTML = '';
 
-            // Actualizar solo la memoria libre y usada
-            cpuChart.data.datasets[0].data = [freeMemory, usedMemory];
-            cpuChart.update();
+            containers.forEach(container => {
+                const containerDiv = document.createElement('div');
+                containerDiv.className = 'container';
+
+                containerDiv.innerHTML = `
+                    <h3>${container.name}</h3>
+                    <div><strong>Imagen:</strong> ${container.image}</div>
+                    <div><strong>Estado:</strong> ${container.status}</div>
+                    <div><strong>Puertos:</strong> ${container.ports.map(port => port.PublicPort).join(', ')}</div>
+                `;
+
+                containersDiv.appendChild(containerDiv);
+            });
         }
 
-        const ctx = document.getElementById('cpuChart').getContext('2d');
-        const cpuChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                // Solo tenemos 2 columnas: Memoria Libre y Memoria Usada
-                labels: ['Memoria Libre (MB)', 'Memoria Usada (MB)'],
-                datasets: [{
-                    label: 'Estado del sistema',
-                    data: [],
-                    backgroundColor: ['#44ff44', '#ff4444'] // Color para memoria libre y usada
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
+        // Función para mostrar la información del sistema
+        function showSystemInfo() {
+            document.getElementById('info').style.display = 'block';
+            document.getElementById('container-monitor').style.display = 'none';
+            loadSystemInfo();
+        }
 
-        setInterval(updateChart, 3000); 
+        // Función para mostrar el monitoreo de contenedores
+        function showContainerMonitor() {
+            document.getElementById('container-monitor').style.display = 'block';
+            document.getElementById('info').style.display = 'none';
+            loadContainers();
+        }
 
-        loadSystemInfo();
+        // Cargar la información del sistema por defecto
+        showSystemInfo();
     </script>
-
-    <button onclick="loadSystemInfo()">Actualizar Información</button>
-    <button onclick="fetch('/shutdown')">Apagar Servidor</button>
 
 </body>
 </html>
-
-

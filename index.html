@@ -61,57 +61,35 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        async function loadSystemInfo() {
+        async function updateChart() {
             const response = await fetch('/info');
             const data = await response.json();
-            const infoDiv = document.getElementById('system-info');
-
-            infoDiv.innerHTML = `
-                <div class="info-item"><strong>Sistema Operativo:</strong> ${data.system}</div>
-                <div class="info-item"><strong>Arquitectura:</strong> ${data.architecture}</div>
-                <div class="info-item"><strong>CPUs:</strong> ${data.cpus}</div>
-                <div class="info-item"><strong>Memoria Libre:</strong> ${data.freeMemory} MB</div>
-                <div class="info-item"><strong>Memoria Total:</strong> ${data.totalMemory} MB</div>
-                <div class="info-item"><strong>Tiempo de Actividad:</strong> ${data.uptime} segundos</div>
-                <div class="info-item"><strong>Versión del SO:</strong> ${data.version}</div>
-                <div class="info-item"><strong>Nombre del Host:</strong> ${data.hostname}</div>
-                <div class="info-item"><strong>Dirección IP:</strong> ${data.ipAddress}</div>
-                <div class="info-item"><strong>Carpeta Home:</strong> ${data.homeDirectory}</div>
-            `;
-
-            updateChart(data);
-        }
-
-        function updateChart(data) {
-            cpuChart.data.datasets[0].data = [data.cpus, data.freeMemory, data.totalMemory];
+    
+            const freeMemory = parseFloat(data.freeMemory); // Convertir a número
+            const totalMemory = parseFloat(data.totalMemory);
+            const usedMemory = totalMemory - freeMemory; // Calcular memoria usada
+    
+            cpuChart.data.datasets[0].data = [data.cpus, freeMemory, usedMemory];
             cpuChart.update();
         }
-
-        async function shutdownServer() {
-            if (confirm("¿Estás seguro de que quieres apagar el servidor?")) {
-                await fetch('/shutdown', { method: 'POST' });
-                alert("Servidor apagado");
-            }
-        }
-
+    
         const ctx = document.getElementById('cpuChart').getContext('2d');
         const cpuChart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['CPUs', 'Memoria Libre (MB)', 'Memoria Total (MB)'],
+                labels: ['CPUs', 'Memoria Libre (MB)', 'Memoria Usada (MB)'],
                 datasets: [{
                     label: 'Estado del sistema',
                     data: [],
-                    backgroundColor: ['#ffcc00', '#ff4444', '#44ff44']
+                    backgroundColor: ['#ffcc00', '#44ff44', '#ff4444']
                 }]
             },
             options: {
                 responsive: true
             }
         });
-
-        loadSystemInfo();
-        setInterval(loadSystemInfo, 3000);
+    
+        setInterval(updateChart, 3000); 
     </script>
 
 </body>

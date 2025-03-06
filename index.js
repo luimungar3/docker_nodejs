@@ -1,31 +1,35 @@
-var express = require('express');
-var app = express();
+const express = require('express');
+const os = require('os');
 
-app.get('/', function (req, res) {
-  res.send('Hello World! Hola Mundo!');
+const app = express();
+const PORT = 3001;
+
+// Función para obtener información del sistema operativo
+function getSystemInfo() {
+    return {
+        hostname: os.hostname(),
+        platform: os.platform(),
+        architecture: os.arch(),
+        cpuCores: os.cpus().length,
+        cpuModel: os.cpus()[0].model,
+        totalMemory: `${(os.totalmem() / (1024 ** 3)).toFixed(2)} GB`,
+        freeMemory: `${(os.freemem() / (1024 ** 3)).toFixed(2)} GB`,
+        uptime: `${(os.uptime() / 3600).toFixed(2)} horas`
+    };
+}
+
+// Ruta principal
+app.get('/', (req, res) => {
+    res.send('<h1>Información del Sistema</h1><p>Visita <a href="/sistema">/sistema</a> para ver los detalles.</p>');
 });
 
-var tareas = ['Tarea 1', 'Tarea 2', 'Tarea 3'];
-
-app.get('/tareas', function (req, res) {
-  res.json(tareas);
+// Ruta para mostrar información del sistema operativo en formato JSON
+app.get('/sistema', (req, res) => {
+    res.json(getSystemInfo());
 });
 
-// Ruta para agregar una tarea
-app.post('/tareas', express.json(), function (req, res) {
-  const tarea = req.body.tarea;
-  if (tarea) {
-    tareas.push(tarea);
-    res.status(201).send(`Tarea "${tarea}" agregada.`);
-  } else {
-    res.status(400).send('Falta la descripción de la tarea.');
-  }
+// Iniciar el servidor en 0.0.0.0 para que sea accesible desde fuera del contenedor
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Servidor corriendo en http://0.0.0.0:${PORT}`);
 });
 
-// Aquí aseguramos que la app escuche en 0.0.0.0 para que sea accesible desde fuera del contenedor
-var server = app.listen(3001, '0.0.0.0', function () {
-  var host = server.address().address;
-  var port = server.address().port;
-
-  console.log('App escuchando en http://%s:%s', host, port);
-});

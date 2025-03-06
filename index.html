@@ -1,56 +1,88 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lista de Tareas</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Tareas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        #task-list {
+            background: white;
+            max-width: 400px;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .task {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        input, button {
+            padding: 10px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
 </head>
 <body>
-  <h1>Agregar una nueva tarea</h1>
-  <form id="taskForm">
-    <label for="tarea">Descripción de la tarea:</label>
-    <input type="text" id="tarea" name="tarea" required>
-    <button type="submit">Agregar tarea</button>
-  </form>
 
-  <h2>Tareas actuales</h2>
-  <ul id="taskList"></ul>
+    <h1>Gestor de Tareas</h1>
+    
+    <div id="task-list">
+        <h2>Tareas Pendientes</h2>
+        <div id="tasks"></div>
+        <input type="text" id="new-task" placeholder="Nueva tarea">
+        <button onclick="addTask()">Agregar</button>
+    </div>
 
-  <script>
-    // Al cargar la página, obtenemos las tareas actuales
-    window.onload = function() {
-      fetch('/tareas')
-        .then(response => response.json())
-        .then(data => {
-          const taskList = document.getElementById('taskList');
-          data.forEach(tarea => {
-            const li = document.createElement('li');
-            li.textContent = tarea;
-            taskList.appendChild(li);
-          });
-        });
-    };
+    <script>
+        async function loadTasks() {
+            const response = await fetch('/tareas');
+            const tasks = await response.json();
+            const taskList = document.getElementById('tasks');
+            taskList.innerHTML = '';
+            tasks.forEach(task => {
+                const div = document.createElement('div');
+                div.classList.add('task');
+                div.textContent = task;
+                taskList.appendChild(div);
+            });
+        }
 
-    // Enviar la nueva tarea al servidor cuando el formulario sea enviado
-    const form = document.getElementById('taskForm');
-    form.onsubmit = function(event) {
-      event.preventDefault();  // Evitar que se recargue la página
-      const tarea = document.getElementById('tarea').value;
+        async function addTask() {
+            const newTask = document.getElementById('new-task').value;
+            if (!newTask) return alert('Escribe una tarea');
+            
+            await fetch('/tareas', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tarea: newTask })
+            });
 
-      // Enviar la nueva tarea usando una petición POST
-      fetch('/tareas', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ tarea: tarea })
-      })
-      .then(response => response.text())
-      .then(message => {
-        alert(message);  // Mostrar un mensaje de confirmación
-        location.reload();  // Recargar la página para ver la lista de tareas actualizada
-      });
-    };
-  </script>
+            document.getElementById('new-task').value = '';
+            loadTasks();
+        }
+
+        loadTasks();
+    </script>
+
 </body>
 </html>

@@ -1,35 +1,29 @@
-const express = require('express');
-const os = require('os');
+var express = require('express');
+var os = require('os');
+var path = require('path');
+var app = express();
 
-const app = express();
-const PORT = 3001;
+// Servir archivos estáticos (para el index.html)
+app.use(express.static(path.join(__dirname)));
 
-// Función para obtener información del sistema operativo
-function getSystemInfo() {
-    return {
-        hostname: os.hostname(),
-        platform: os.platform(),
+// Ruta para mostrar el HTML
+app.get('/', function (req, res) {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Ruta para obtener información del sistema
+app.get('/info', function (req, res) {
+    res.json({
+        system: os.type(),
         architecture: os.arch(),
-        cpuCores: os.cpus().length,
-        cpuModel: os.cpus()[0].model,
-        totalMemory: `${(os.totalmem() / (1024 ** 3)).toFixed(2)} GB`,
-        freeMemory: `${(os.freemem() / (1024 ** 3)).toFixed(2)} GB`,
-        uptime: `${(os.uptime() / 3600).toFixed(2)} horas`
-    };
-}
-
-// Ruta principal
-app.get('/', (req, res) => {
-    res.send('<h1>Información del Sistema</h1><p>Visita <a href="/sistema">/sistema</a> para ver los detalles.</p>');
+        cpus: os.cpus().length,
+        freeMemory: (os.freemem() / 1024 / 1024).toFixed(2), // Convertir a MB
+        totalMemory: (os.totalmem() / 1024 / 1024).toFixed(2), // Convertir a MB
+        uptime: os.uptime() // Tiempo en segundos
+    });
 });
 
-// Ruta para mostrar información del sistema operativo en formato JSON
-app.get('/sistema', (req, res) => {
-    res.json(getSystemInfo());
+// Iniciar el servidor en el puerto 3001
+app.listen(3001, '0.0.0.0', function () {
+    console.log('Servidor corriendo en http://0.0.0.0:3001');
 });
-
-// Iniciar el servidor en 0.0.0.0 para que sea accesible desde fuera del contenedor
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Servidor corriendo en http://0.0.0.0:${PORT}`);
-});
-

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestor de Tareas</title>
+    <title>Características del Sistema</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,75 +14,49 @@
         h1 {
             color: #333;
         }
-        #task-list {
+        #info {
             background: white;
-            max-width: 400px;
+            max-width: 500px;
             margin: 20px auto;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            text-align: left;
         }
-        .task {
+        .info-item {
             padding: 10px;
             border-bottom: 1px solid #ddd;
-        }
-        input, button {
-            padding: 10px;
-            margin-top: 10px;
-            border: none;
-            border-radius: 5px;
-        }
-        button {
-            background-color: #28a745;
-            color: white;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #218838;
         }
     </style>
 </head>
 <body>
 
-    <h1>Gestor de Tareas</h1>
+    <h1>Información del Sistema</h1>
     
-    <div id="task-list">
-        <h2>Tareas Pendientes</h2>
-        <div id="tasks"></div>
-        <input type="text" id="new-task" placeholder="Nueva tarea">
-        <button onclick="addTask()">Agregar</button>
+    <div id="info">
+        <h2>Detalles:</h2>
+        <div id="system-info"></div>
     </div>
 
     <script>
-        async function loadTasks() {
-            const response = await fetch('/tareas');
-            const tasks = await response.json();
-            const taskList = document.getElementById('tasks');
-            taskList.innerHTML = '';
-            tasks.forEach(task => {
-                const div = document.createElement('div');
-                div.classList.add('task');
-                div.textContent = task;
-                taskList.appendChild(div);
-            });
+        async function loadSystemInfo() {
+            const response = await fetch('/info');
+            const data = await response.json();
+            const infoDiv = document.getElementById('system-info');
+
+            infoDiv.innerHTML = `
+                <div class="info-item"><strong>Nombre del Sistema:</strong> ${data.system}</div>
+                <div class="info-item"><strong>Arquitectura:</strong> ${data.architecture}</div>
+                <div class="info-item"><strong>CPUs:</strong> ${data.cpus}</div>
+                <div class="info-item"><strong>Memoria Libre:</strong> ${data.freeMemory} MB</div>
+                <div class="info-item"><strong>Memoria Total:</strong> ${data.totalMemory} MB</div>
+                <div class="info-item"><strong>Tiempo de Actividad:</strong> ${data.uptime} segundos</div>
+            `;
         }
 
-        async function addTask() {
-            const newTask = document.getElementById('new-task').value;
-            if (!newTask) return alert('Escribe una tarea');
-            
-            await fetch('/tareas', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ tarea: newTask })
-            });
-
-            document.getElementById('new-task').value = '';
-            loadTasks();
-        }
-
-        loadTasks();
+        loadSystemInfo();
     </script>
 
 </body>
 </html>
+

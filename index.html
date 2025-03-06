@@ -27,6 +27,22 @@
             padding: 10px;
             border-bottom: 1px solid #ddd;
         }
+        canvas {
+            display: block;
+            margin: 20px auto;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -38,6 +54,12 @@
         <div id="system-info"></div>
     </div>
 
+    <canvas id="cpuChart" width="400" height="200"></canvas>
+
+    <button onclick="loadSystemInfo()">Actualizar Información</button>
+    <button onclick="shutdownServer()">Apagar Servidor</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         async function loadSystemInfo() {
             const response = await fetch('/info');
@@ -45,7 +67,7 @@
             const infoDiv = document.getElementById('system-info');
 
             infoDiv.innerHTML = `
-                <div class="info-item"><strong>Nombre del Sistema:</strong> ${data.system}</div>
+                <div class="info-item"><strong>Sistema Operativo:</strong> ${data.system}</div>
                 <div class="info-item"><strong>Arquitectura:</strong> ${data.architecture}</div>
                 <div class="info-item"><strong>CPUs:</strong> ${data.cpus}</div>
                 <div class="info-item"><strong>Memoria Libre:</strong> ${data.freeMemory} MB</div>
@@ -56,21 +78,22 @@
                 <div class="info-item"><strong>Dirección IP:</strong> ${data.ipAddress}</div>
                 <div class="info-item"><strong>Carpeta Home:</strong> ${data.homeDirectory}</div>
             `;
+
+            updateChart(data);
         }
 
-        loadSystemInfo();
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<canvas id="cpuChart" width="400" height="200"></canvas>
-<script>
-        async function updateChart() {
-        const response = await fetch('/info');
-        const data = await response.json();
-    
-        cpuChart.data.datasets[0].data = [data.cpus, data.freeMemory, data.totalMemory];
-        cpuChart.update();
+        function updateChart(data) {
+            cpuChart.data.datasets[0].data = [data.cpus, data.freeMemory, data.totalMemory];
+            cpuChart.update();
         }
-    
+
+        async function shutdownServer() {
+            if (confirm("¿Estás seguro de que quieres apagar el servidor?")) {
+                await fetch('/shutdown', { method: 'POST' });
+                alert("Servidor apagado");
+            }
+        }
+
         const ctx = document.getElementById('cpuChart').getContext('2d');
         const cpuChart = new Chart(ctx, {
             type: 'bar',
@@ -86,11 +109,10 @@
                 responsive: true
             }
         });
-    
-        setInterval(updateChart, 3000); 
+
+        loadSystemInfo();
+        setInterval(loadSystemInfo, 3000);
     </script>
-    <button onclick="loadSystemInfo()">Actualizar Información</button>
-    <button onclick="fetch('/shutdown')">Apagar Servidor</button>
+
 </body>
 </html>
-

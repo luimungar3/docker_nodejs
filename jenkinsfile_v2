@@ -21,7 +21,7 @@ node {
    }
    post {
     always {
-        mail to: 'tu_correo@example.com',
+        mail to: 'correojenkins09@gmail.com',
              subject: "Pipeline finalizado: ${currentBuild.currentResult}",
              body: "El pipeline ha finalizado con estado: ${currentBuild.currentResult}.\nRevisión: ${gitcommit}"
     }
